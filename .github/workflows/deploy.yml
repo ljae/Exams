@@ -21,7 +21,7 @@ jobs:
         run: flutter pub get
 
       - name: Build for web
-        run: flutter build web --base-href /Exam/
+        run: flutter build web --base-href /Exams/
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
