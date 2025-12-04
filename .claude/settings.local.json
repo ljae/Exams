@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter run:*)",
+      "Bash(xcode-select:*)",
+      "Bash(xcodebuild:*)",
+      "Bash(flutter doctor:*)",
+      "Bash(sudo gem install:*)",
+      "Bash(gem install:*)",
+      "Bash(ruby:*)",
+      "Bash(brew --version:*)",
+      "Bash(brew list:*)",
+      "Bash(brew install:*)",
+      "Bash(/opt/homebrew/opt/ruby/bin/gem install:*)",
+      "Bash(export PATH=\"/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/3.4.0/bin:$PATH\")",
+      "Bash(nc:*)",
+      "Bash(flutter pub:*)",
+      "Bash(flutter clean:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(echo:*)",
+      "Bash(export PATH=\"$HOME/Develop/flutter/bin:$PATH\")",
+      "Bash(flutter --version:*)",
+      "Bash(cat:*)",
+      "Bash(chmod:*)",
+      "Bash(flutter build:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
