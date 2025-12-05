@@ -1,3 +1,5 @@
+export 'school.dart';
+
 class Problem {
   final String id;
   final DateTime date;
@@ -122,6 +124,20 @@ class RankingItem {
     required this.nickname,
     required this.schoolName,
     required this.solvedCount,
+    required this.rank,
+  });
+}
+
+class SchoolRankingItem {
+  final String schoolName;
+  final int totalSolvedCount;
+  final int studentCount;
+  final int rank;
+
+  SchoolRankingItem({
+    required this.schoolName,
+    required this.totalSolvedCount,
+    required this.studentCount,
     required this.rank,
   });
 }

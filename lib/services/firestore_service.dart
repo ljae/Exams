@@ -9,6 +9,25 @@ class FirestoreService {
   // Use real Firebase Firestore
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+  // Search schools by name
+  Future<List<School>> searchSchools(String query) async {
+    if (query.isEmpty) return [];
+
+    final snapshot = await _db.collection('schools')
+        .orderBy('school_name_only')
+        .startAt([query])
+        .endAt([query + '\uf8ff'])
+        .limit(10)
+        .get();
+
+    return snapshot.docs.map((doc) => School.fromMap(doc.data(), doc.id)).toList();
+  }
+
+  // Add a school (for seeding)
+  Future<void> addSchool(School school) async {
+    await _db.collection('schools').add(school.toMap());
+  }
+
 
 
 
@@ -1450,6 +1469,45 @@ $3,155.6 > 3,000$이므로 **ㄷ은 참**입니다.
         nickname: rankings[i].nickname,
         schoolName: rankings[i].schoolName,
         solvedCount: rankings[i].solvedCount,
+        rank: i + 1,
+      ));
+    }
+
+    return rankedList;
+  }
+
+  Future<List<SchoolRankingItem>> getSchoolRankings() async {
+    final individualRankings = await getRankings();
+    final schoolMap = <String, Map<String, dynamic>>{};
+
+    for (var item in individualRankings) {
+      if (!schoolMap.containsKey(item.schoolName)) {
+        schoolMap[item.schoolName] = {
+          'totalSolvedCount': 0,
+          'studentCount': 0,
+        };
+      }
+      schoolMap[item.schoolName]!['totalSolvedCount'] += item.solvedCount;
+      schoolMap[item.schoolName]!['studentCount'] += 1;
+    }
+
+    final schoolRankings = schoolMap.entries.map((entry) {
+      return SchoolRankingItem(
+        schoolName: entry.key,
+        totalSolvedCount: entry.value['totalSolvedCount'],
+        studentCount: entry.value['studentCount'],
+        rank: 0,
+      );
+    }).toList();
+
+    schoolRankings.sort((a, b) => b.totalSolvedCount.compareTo(a.totalSolvedCount));
+
+    final rankedList = <SchoolRankingItem>[];
+    for (int i = 0; i < schoolRankings.length; i++) {
+      rankedList.add(SchoolRankingItem(
+        schoolName: schoolRankings[i].schoolName,
+        totalSolvedCount: schoolRankings[i].totalSolvedCount,
+        studentCount: schoolRankings[i].studentCount,
         rank: i + 1,
       ));
     }

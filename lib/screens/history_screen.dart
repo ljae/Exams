@@ -29,12 +29,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const WorldMathAppBar(
+      appBar: WorldMathAppBar(
         title: '',
         titleWidget: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.auto_stories, color: Colors.blue, size: 24),
+            Image.asset(
+              'assets/images/history.png',
+              width: 24,
+              height: 24,
+            ),
             SizedBox(width: 8),
             Text(
               '나의 학습 기록',

@@ -238,12 +238,21 @@ class _ProblemDetailScreenState extends State<ProblemDetailScreen> with SingleTi
   }
 
   Future<void> _launchNewsUrl() async {
-    if (widget.problem.newsUrl != null) {
-      final Uri url = Uri.parse(widget.problem.newsUrl!);
-      if (!await launchUrl(url)) {
-        if (mounted) {
+    final urlString = widget.problem.newsUrl?.trim();
+    if (urlString != null && urlString.isNotEmpty) {
+      final Uri? url = Uri.tryParse(urlString);
+      if (url != null && url.hasScheme) {
+        if (!await launchUrl(url)) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('뉴스 링크를 열 수 없습니다.')),
+            );
+          }
+        }
+      } else {
+         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('뉴스 링크를 열 수 없습니다.')),
+            const SnackBar(content: Text('유효하지 않은 링크입니다.')),
           );
         }
       }

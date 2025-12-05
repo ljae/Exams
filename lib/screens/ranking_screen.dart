@@ -14,7 +14,8 @@ class RankingScreen extends StatefulWidget {
 class _RankingScreenState extends State<RankingScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
-  late Future<List<RankingItem>> _rankingsFuture;
+  late Future<List<RankingItem>> _individualRankingsFuture;
+  late Future<List<SchoolRankingItem>> _schoolRankingsFuture;
   final FirestoreService _dataService = FirestoreService();
 
   @override
@@ -25,7 +26,8 @@ class _RankingScreenState extends State<RankingScreen>
       vsync: this,
     );
     _animationController.forward();
-    _rankingsFuture = _dataService.getRankings();
+    _individualRankingsFuture = _dataService.getRankings();
+    _schoolRankingsFuture = _dataService.getSchoolRankings();
   }
 
   @override
@@ -37,12 +39,16 @@ class _RankingScreenState extends State<RankingScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const WorldMathAppBar(
+      appBar: WorldMathAppBar(
         title: '',
         titleWidget: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.emoji_events, color: Colors.amber, size: 24),
+            Image.asset(
+              'assets/images/ranking.png',
+              width: 24,
+              height: 24,
+            ),
             SizedBox(width: 8),
             Text(
               '명예의 전당',
@@ -56,25 +62,26 @@ class _RankingScreenState extends State<RankingScreen>
           ],
         ),
       ),
-      body: FutureBuilder<List<RankingItem>>(
-        future: _rankingsFuture,
+      body: FutureBuilder<List<dynamic>>(
+        future: Future.wait([_individualRankingsFuture, _schoolRankingsFuture]),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          } else if (!snapshot.hasData || snapshot.data![0].isEmpty) {
             return const Center(child: Text('아직 랭킹이 없습니다.'));
           }
 
-          final rankings = snapshot.data!;
+          final individualRankings = snapshot.data![0] as List<RankingItem>;
+          final schoolRankings = snapshot.data![1] as List<SchoolRankingItem>;
           // For now, we'll use a mock user ID.
           final currentUserId = 'mock_user_id';
 
           return Column(
             children: [
-              // Top 3 Podium
-              if (rankings.length >= 3)
+              // Top 3 Podium (School Rankings)
+              if (schoolRankings.length >= 3)
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -91,12 +98,17 @@ class _RankingScreenState extends State<RankingScreen>
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      _buildPodiumItem(rankings[1], 2, 100),
-                      _buildPodiumItem(rankings[0], 1, 130),
-                      _buildPodiumItem(rankings[2], 3, 80),
+                      _buildPodiumItem(schoolRankings[1], 2, 100),
+                      _buildPodiumItem(schoolRankings[0], 1, 130),
+                      _buildPodiumItem(schoolRankings[2], 3, 80),
                     ],
                   ),
                 ),
+              if (schoolRankings.length < 3 && schoolRankings.isNotEmpty)
+                 Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Center(child: Text("학교 랭킹 데이터를 집계 중입니다.")),
+                 ),
 
               // Header
               Container(
@@ -124,11 +136,11 @@ class _RankingScreenState extends State<RankingScreen>
               Expanded(
                 child: ListView.separated(
                   padding: const EdgeInsets.symmetric(vertical: 8),
-                  itemCount: rankings.length,
+                  itemCount: individualRankings.length,
                   separatorBuilder: (context, index) =>
                       Divider(height: 1, color: Colors.grey[200]),
                   itemBuilder: (context, index) {
-                    final item = rankings[index];
+                    final item = individualRankings[index];
                     final isMe = item.userId == currentUserId;
 
                     return TweenAnimationBuilder<double>(
@@ -254,7 +266,7 @@ class _RankingScreenState extends State<RankingScreen>
     );
   }
 
-  Widget _buildPodiumItem(RankingItem item, int position, double height) {
+  Widget _buildPodiumItem(SchoolRankingItem item, int position, double height) {
     final colors = [
       Colors.amber,
       Colors.grey[400]!,
@@ -299,7 +311,7 @@ class _RankingScreenState extends State<RankingScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              item.nickname,
+              item.schoolName,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
@@ -310,7 +322,7 @@ class _RankingScreenState extends State<RankingScreen>
             ),
             const SizedBox(height: 4),
             Text(
-              '${item.solvedCount}문제',
+              '${item.totalSolvedCount}문제',
               style: TextStyle(
                 color: Colors.grey[600],
                 fontSize: 12,
@@ -330,7 +342,7 @@ class _RankingScreenState extends State<RankingScreen>
               ),
               child: Center(
                 child: Icon(
-                  Icons.emoji_events,
+                  Icons.school, // Changed icon to school
                   color: colors[position - 1],
                   size: 30,
                 ),

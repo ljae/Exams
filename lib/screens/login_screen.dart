@@ -193,20 +193,75 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         },
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _schoolController,
-                        decoration: const InputDecoration(
-                          labelText: '학교',
-                          prefixIcon: Icon(Icons.school_outlined),
-                          hintText: '재학 중인 학교를 입력하세요',
-                        ),
-                        textInputAction: TextInputAction.done,
-                        onFieldSubmitted: (_) => _login(),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return '학교를 입력해주세요';
+                      // School Autocomplete
+                      Autocomplete<School>(
+                        displayStringForOption: (School option) => option.school_name,
+                        optionsBuilder: (TextEditingValue textEditingValue) async {
+                          if (textEditingValue.text == '') {
+                            return const Iterable<School>.empty();
                           }
-                          return null;
+                          try {
+                            return await _dataService.searchSchools(textEditingValue.text);
+                          } catch (e) {
+                            print('Error searching schools: $e');
+                            return const Iterable<School>.empty();
+                          }
+                        },
+                        onSelected: (School selection) {
+                          _schoolController.text = selection.school_name;
+                        },
+                        fieldViewBuilder: (BuildContext context, TextEditingController fieldTextEditingController, FocusNode fieldFocusNode, VoidCallback onFieldSubmitted) {
+                          // Sync initial value if needed
+                          if (_schoolController.text.isNotEmpty && fieldTextEditingController.text.isEmpty) {
+                            fieldTextEditingController.text = _schoolController.text;
+                          }
+                          
+                          return TextFormField(
+                            controller: fieldTextEditingController,
+                            focusNode: fieldFocusNode,
+                            decoration: const InputDecoration(
+                              labelText: '학교',
+                              prefixIcon: Icon(Icons.school_outlined),
+                              hintText: '학교를 검색하세요',
+                            ),
+                            onChanged: (value) {
+                              // Sync manual input to _schoolController
+                              _schoolController.text = value;
+                            },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return '학교를 입력해주세요';
+                              }
+                              return null;
+                            },
+                          );
+                        },
+                        optionsViewBuilder: (BuildContext context, AutocompleteOnSelected<School> onSelected, Iterable<School> options) {
+                          return Align(
+                            alignment: Alignment.topLeft,
+                            child: Material(
+                              elevation: 4.0,
+                              color: Colors.white, // Ensure background color
+                              child: SizedBox(
+                                width: 300,
+                                height: 200, // Limit height to prevent layout issues
+                                child: ListView.builder(
+                                  padding: const EdgeInsets.all(8.0),
+                                  itemCount: options.length,
+                                  itemBuilder: (BuildContext context, int index) {
+                                    final School option = options.elementAt(index);
+                                    return ListTile(
+                                      title: Text(option.school_name),
+                                      subtitle: Text(option.location),
+                                      onTap: () {
+                                        onSelected(option);
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          );
                         },
                       ),
                       const SizedBox(height: 32),
