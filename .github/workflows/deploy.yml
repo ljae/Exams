@@ -16,12 +16,16 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          flutter-version: '3.38.3'
+
+      - name: Enable Flutter web
+        run: flutter config --enable-web
 
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build for web
-        run: flutter build web --base-href /Exams/
+        run: flutter build web --release --base-href /Exams/
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
