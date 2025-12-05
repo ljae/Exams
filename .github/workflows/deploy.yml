@@ -18,9 +18,6 @@ jobs:
           channel: 'stable'
           flutter-version: '3.38.3'
 
-      - name: Configure for web
-        run: flutter create . --platforms web
-
       - name: Install dependencies
         run: flutter pub get
 
