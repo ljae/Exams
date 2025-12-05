@@ -45,3 +45,6 @@ app.*.map.json
 /android/app/release
 .vercel
 .env*.local
+
+# Web build output (managed by GitHub Actions)
+/web/
